@@ -1,17 +1,18 @@
 from flask import Flask, request, jsonify, send_file, after_this_request
 import xml.etree.ElementTree as ET
+from flask.helpers import send_from_directory
 import json
 import os
 import uuid
-from flask_cors import CORS, cross_origin
+# from flask_cors import CORS, cross_origin
 from functions import calculate_rarity, assign_names, assign_scores
 
-app = Flask(__name__)
-CORS(app, support_credentials=True)
+app = Flask(__name__, static_folder='FANBLOCK/client/dist', static_url_path='')
+# cors = CORS(app)
 
 
 @app.route('/upload', methods=['POST'])
-# @cross_origin(supports_credentials=True)
+# @cross_origin()
 def upload_file():
     # print("Uploading file")
     file = request.files['file']
@@ -55,6 +56,11 @@ def upload_file():
 
     # Return the JSON file for download
     return send_file(json_filename, as_attachment=True)
+
+@app.route('/')
+@cross_origin()
+def serve():
+    return send_from_directory(app.static_folder, 'index.html')
 
 
 if __name__ == '__main__':

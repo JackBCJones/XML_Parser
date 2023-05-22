@@ -15,7 +15,7 @@ function FileUpload() {
     const formData = new FormData();
     formData.append('file', selectedFile);
 
-    const url = `http://127.0.0.1:5000/upload?x_multiplier=${xMultiplier}&y_multiplier=${yMultiplier}`;
+    const url = `https://fbxml.herokuapp.com/upload?x_multiplier=${xMultiplier}&y_multiplier=${yMultiplier}`;
 
     try {
       const response = await fetch(url, {
