@@ -7,10 +7,11 @@ from flask_cors import CORS, cross_origin
 from functions import calculate_rarity, assign_names, assign_scores
 
 app = Flask(__name__)
-CORS(app, resources={r"/upload": {"origins": "*"}})
+CORS(app, support_credentials=True)
 
 
 @app.route('/upload', methods=['POST'])
+# @cross_origin(supports_credentials=True)
 def upload_file():
     # print("Uploading file")
     file = request.files['file']
@@ -56,7 +57,5 @@ def upload_file():
     return send_file(json_filename, as_attachment=True)
 
 
-
-
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

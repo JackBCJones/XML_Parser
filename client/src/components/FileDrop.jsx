@@ -21,6 +21,7 @@ function FileUpload() {
       const response = await fetch(url, {
         method: 'POST',
         body: formData,
+        mode: 'cors'
       })
       .then((response) => response.blob())
       .then((blob) => {
