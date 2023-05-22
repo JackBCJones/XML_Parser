@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 function FileUpload() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [downloadLink, setDownloadLink] = useState(null);
+  const [xMultiplier, setXMultiplier] = useState(1.15);
+  const [yMultiplier, setYMultiplier] = useState(0.74);
 
 
   const handleFileChange = (event) => {
@@ -12,9 +14,11 @@ function FileUpload() {
   const handleUpload = async () => {
     const formData = new FormData();
     formData.append('file', selectedFile);
-    
+
+    const url = `http://127.0.0.1:5000/upload?x_multiplier=${xMultiplier}&y_multiplier=${yMultiplier}`;
+
     try {
-      const response = await fetch('http://127.0.0.1:5000/upload', {
+      const response = await fetch(url, {
         method: 'POST',
         body: formData,
       })
@@ -34,6 +38,24 @@ function FileUpload() {
   return (
     <div>
       <input type="file" onChange={handleFileChange} />
+      <div>
+        <label>Field Width (x):</label>
+        <input
+          type="number"
+          step="0.10"
+          value={xMultiplier}
+          onChange={(e) => setXMultiplier(e.target.value)}
+        />
+      </div>
+      <div>
+        <label>Field Height (y):</label>
+        <input
+          type="number"
+          step="0.10"
+          value={yMultiplier}
+          onChange={(e) => setYMultiplier(parseFloat(e.target.value))}
+        />
+      </div>
       <button onClick={handleUpload}>Upload</button>
       {downloadLink && (
         <a href={downloadLink} download="converted_file.json">

@@ -2,10 +2,12 @@ from flask import Flask, request, jsonify, send_file, after_this_request
 import xml.etree.ElementTree as ET
 import json
 import os
+import uuid
 from flask_cors import CORS, cross_origin
+from functions import calculate_rarity, assign_names, assign_scores
 
 app = Flask(__name__)
-CORS(app, allow_headers=['Content-Type'])
+CORS(app, resources={r"/upload": {"origins": "*"}})
 
 
 @app.route('/upload', methods=['POST'])
@@ -17,26 +19,32 @@ def upload_file():
 
     events = []
 
+    x_multiplier = float(request.args.get('x_multiplier', '1.15'))
+    y_multiplier = float(request.args.get('y_multiplier', '0.74'))
+
     for game in root.findall('Game'):
         for event in game.findall('Event'):
-            x = round(float(event.get('x')) * 1.15, 1)
-            y = round(float(event.get('y')) * 0.74, 1)
-            if x > 0.0 and y > 0.0:
-                type_id = int(event.get('type_id'))
-                team_id = int(event.get('team_id'))
-                outcome = int(event.get('outcome'))
-                period_id = int(event.get('period_id'))
-                qualifiers = []
-                names = []
-                for qualifier in event:
-                    qualifier_id = int(qualifier.get('qualifier_id'))
-                    qualifiers.append(qualifier_id)
-                events.append({'x': x, 'y': y, 'type_id': type_id, 'qualifiers': qualifiers, 'team_id': team_id, "outcome": outcome, "period_id": period_id, "names": names})
+            unique_id = str(uuid.uuid4())
+            x = round(float(event.get('x')) * x_multiplier, 1)
+            y = round(float(event.get('y')) * y_multiplier, 1)
+            type_id = int(event.get('type_id'))
+            team_id = int(event.get('team_id'))
+            outcome = int(event.get('outcome'))
+            period_id = int(event.get('period_id'))
+            qualifiers = []
+            for qualifier in event:
+                qualifier_id = int(qualifier.get('qualifier_id'))
+                qualifiers.append(qualifier_id)
+            events.append({'id': unique_id, 'x': x, 'y': y, 'type_id': type_id, 'qualifiers': qualifiers, 'team_id': team_id, "outcome": outcome, "period_id": period_id})
+
+    events_with_rarity = calculate_rarity(events)
+    events_with_names = assign_names(events_with_rarity)
+    events_with_scores = assign_scores(events_with_names)
 
     # Save the events as a JSON file
     json_filename = f'{file.filename}_new.json'
     with open(json_filename, 'w') as jsonfile:
-        json.dump(events, jsonfile)
+        json.dump(events_with_scores, jsonfile, indent=4)
 
     @after_this_request
     def delete_file(response):
