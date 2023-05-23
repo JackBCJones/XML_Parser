@@ -58,7 +58,7 @@ def upload_file():
     return send_file(json_filename, as_attachment=True)
 
 @app.route('/')
-@cross_origin()
+# @cross_origin()
 def serve():
     return send_from_directory(app.static_folder, 'index.html')
 
